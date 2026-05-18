@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tivon Park Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .brand-purple { color: #78246c; }
+        .bg-brand-purple { background-color: #78246c; }
+        .bg-brand-green { background-color: #8cb83b; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen">
+
+    <div id="gatewayScreen" class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center border-t-4 border-[#78246c]">
+            <div class="flex justify-center mb-4">
+                <span class="text-4xl">🌳</span>
+            </div>
+            <h1 class="text-2xl font-black brand-purple tracking-wider mb-1">TIVON PARK</h1>
+            <p class="text-xs text-gray-400 mb-6">G-Wing Cloud Operations Engine</p>
+            
+            <div class="space-y-3">
+                <button onclick="enterSystem(false)" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold text-sm transition">👁️ Resident View Portal</button>
+                <div class="border-b border-gray-100 my-2"></div>
+                <input type="password" id="passwordInput" placeholder="Admin Password" class="w-full px-4 py-2 border rounded-lg text-center text-sm focus:ring-2 focus:ring-[#78246c] focus:outline-none">
+                <button onclick="enterSystem(true)" class="w-full bg-brand-purple text-white py-2.5 rounded-lg font-semibold hover:bg-opacity-90 transition text-sm">Manager Access 🔑</button>
+            </div>
+            <p id="loginError" class="text-red-500 text-xs mt-2 hidden">Wrong Password.</p>
+        </div>
+    </div>
+
+    <div id="mainApp" class="hidden">
+        <header class="bg-white shadow-sm border-b px-4 py-3 sticky top-0 z-10">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🌳</span>
+                    <div>
+                        <h1 class="text-lg font-black brand-purple leading-none">TIVON PARK</h1>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1" id="roleBadge">Loading Access Profile...</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="syncData()" id="syncBtn" class="text-xs bg-emerald-50 text-emerald-700 font-bold px-3 py-1.5 rounded-lg border border-emerald-200">🔄 Sync Cloud</button>
+                    <select id="monthSelect" onchange="switchMonth()" class="bg-gray-100 border rounded-lg px-2 py-1.5 font-semibold text-gray-700 text-xs focus:outline-none">
+                        <option value="January 2026">January 2026</option>
+                        <option value="February 2026">February 2026</option>
+                        <option value="March 2026">March 2026</option>
+                        <option value="April 2026">April 2026</option>
+                        <option value="May 2026" selected>May 2026</option>
+                        <option value="June 2026">June 2026</option>
+                    </select>
+                    <button onclick="location.reload()" class="text-xs text-gray-400 pl-2">Exit</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-4 space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl shadow-xs border-l-4 border-brand-purple">
+                    <p class="text-xs font-bold text-gray-400 uppercase">Collected (<span class="mLabel">May 2026</span>)</p>
+                    <p class="text-xl font-bold brand-purple mt-1">₹<span id="metricCollected">0</span></p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-xs border-l-4 border-brand-green">
+                    <p class="text-xs font-bold text-gray-400 uppercase">Paid Units</p>
+                    <p class="text-xl font-bold text-gray-700 mt-1"><span id="metricPaidCount">0</span> / 36</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-xs border-l-4 border-amber-500">
+                    <p class="text-xs font-bold text-gray-400 uppercase">Pending (<span class="mLabel">May 2026</span>)</p>
+                    <p class="text-xl font-bold text-amber-600 mt-1">₹<span id="metricPending">0</span></p>
+                </div>
+                <div class="bg-gray-900 text-white p-4 rounded-xl shadow-xs border-l-4 border-emerald-400">
+                    <p class="text-xs font-bold text-emerald-400 uppercase">🏦 Net Corpus Fund</p>
+                    <p class="text-xl font-bold mt-1">₹<span id="metricCorpus">0</span></p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h2 class="text-md font-black text-gray-700 flex justify-between items-center">
+                    <span>Flat Maintenance Distribution Grid (<span class="mLabel">May 2026</span>)</span>
+                    <span id="adminLockBadge" class="text-xs bg-amber-50 text-amber-700 border px-2 py-0.5 rounded font-normal">🔒 View-Only</span>
+                </h2>
+                <div id="gridWrapper" class="space-y-3"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl border p-4 md:col-span-2">
+                    <h3 class="font-bold text-gray-800 text-xs uppercase mb-3 tracking-wider">📋 Monthly Audit Ledger</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-gray-500">
+                            <thead class="bg-gray-50 text-gray-600 uppercase">
+                                <tr>
+                                    <th class="p-2">Flat</th>
+                                    <th class="p-2">BHK Type</th>
+                                    <th class="p-2">Rate Amount</th>
+                                    <th class="p-2">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledgerTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl border p-4 space-y-4">
+                    <h3 class="font-bold text-gray-800 text-xs uppercase tracking-wider">📉 Expense Adjustments</h3>
+                    
+                    <div id="adminExpenseForm" class="hidden space-y-2 bg-gray-50 p-3 rounded-lg border">
+                        <input type="text" id="expDesc" placeholder="Expense Name" class="w-full p-2 bg-white text-xs border rounded focus:outline-none">
+                        <input type="number" id="expAmt" placeholder="Amount (INR)" class="w-full p-2 bg-white text-xs border rounded focus:outline-none">
+                        <button onclick="submitExpenseCloud()" class="w-full bg-brand-purple text-white text-xs py-2 rounded font-bold">Log Outflow Line</button>
+                    </div>
+
+                    <div class="overflow-y-auto max-h-60">
+                        <table class="w-full text-xs text-left">
+                            <tbody id="expenseTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const ADMIN_PASS = "G123";
+        
+        // PASTE YOUR BRAND NEW GOOGLE APPS SCRIPT URL WIREWAY LINK BETWEEN THESE QUOTES:
+        const GOOGLE_URL = "";
+
+        let currentMonth = "May 2026";
+        let isManager = false;
+        let masterData = { flats: [], expenses: [] };
+
+        const floors = ['G', '1', '2', '3', '4', '5', '6', '7', '8'];
+        const patterns = ['01', '02', '03', '04'];
+
+        function enterSystem(adminAttempt) {
+            if (adminAttempt) {
+                const input = document.getElementById('passwordInput').value;
+                if (input !== ADMIN_PASS) {
+                    document.getElementById('loginError').classList.remove('hidden');
+                    return;
+                }
+                isManager = true;
+                document.getElementById('roleBadge').innerText = "System Administrator Profile";
+                document.getElementById('adminLockBadge').className = "text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded font-bold";
+                document.getElementById('adminLockBadge').innerText = "🔓 Live Write Enabled";
+                document.getElementById('adminExpenseForm').classList.remove('hidden');
+            } else {
+                isManager = false;
+                document.getElementById('roleBadge').innerText = "Public Member Profile";
+            }
+            document.getElementById('gatewayScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            syncData();
+        }
+
+        function switchMonth() {
+            currentMonth = document.getElementById('monthSelect').value;
+            document.querySelectorAll('.mLabel').forEach(el => el.innerText = currentMonth);
+            renderUI();
+        }
+
+        function syncData() {
+            if(!GOOGLE_URL) { alert("Please bind your new Google URL Endpoint script inside line 140!"); return; }
+            const sBtn = document.getElementById('syncBtn');
+            sBtn.innerText = "⚡ Loading...";
+            sBtn.disabled = true;
+
+            fetch(GOOGLE_URL, { method: "GET" })
+                .then(r => r.json())
+                .then(cloudPayload => {
+                    masterData = cloudPayload;
+                    renderUI();
+                    sBtn.innerText = "✅ Synced";
+                    setTimeout(() => { sBtn.innerText = "🔄 Sync Cloud"; sBtn.disabled = false; }, 1500);
+                })
+                .catch(e => {
+                    console.error(e);
+                    sBtn.innerText = "❌ Sync Fault";
+                    sBtn.disabled = false;
+                });
+        }
+
+        function renderUI() {
+            const container = document.getElementById('gridWrapper');
+            container.innerHTML = '';
+            
+            let monthCollected = 0, monthPending = 0, paidCount = 0, grossAllTimeCollection = 0;
+            const ledgerBody = document.getElementById('ledgerTableBody');
+            ledgerBody.innerHTML = '';
+
+            // Compute absolute metrics from fixed objects safely
+            masterData.flats.forEach(f => {
+                Object.keys(f).forEach(key => {
+                    if (f[key] === true && key !== 'flatNumber' && key !== 'bhk' && key !== 'rate') {
+                        grossAllTimeCollection += f.rate;
+                    }
+                });
+            });
+
+            floors.forEach(fl => {
+                const fRow = document.createElement('div');
+                fRow.className = "bg-white p-3 border rounded-xl flex flex-col md:flex-row items-start md:items-center gap-3";
+                
+                const label = document.createElement('div');
+                label.className = "w-20 font-black brand-purple text-xs tracking-wider uppercase";
+                label.innerText = fl === 'G' ? "Ground" : `Floor ${fl}`;
+                fRow.appendChild(label);
+
+                const innerGrid = document.createElement('div');
+                innerGrid.className = "grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1 w-full";
+
+                patterns.forEach(p => {
+                    const fId = `${fl}${p}`;
+                    const match = masterData.flats.find(item => item.flatNumber === fId);
+                    
+                    if (!match) return; // Skip if row mismatch helper omitted
+
+                    const statusIsPaid = match[currentMonth] || false;
+                    if (statusIsPaid) {
+                        monthCollected += match.rate;
+                        paidCount++;
+                    } else {
+                        monthPending += match.rate;
+                    }
+
+                    const btn = document.createElement('button');
+                    btn.className = `p-2.5 rounded-lg text-left text-xs transition duration-150 ${statusIsPaid ? 'bg-green-500 text-white border border-green-600' : 'bg-white border text-gray-700'}`;
+                    btn.innerHTML = `<div class="font-black">${fId} <span class="text-[9px] font-normal opacity-70">(${match.bhk})</span></div><div class="mt-1 font-mono text-[10px] flex justify-between font-bold"><span>₹${match.rate}</span><span>${statusIsPaid?'✓ PAID':'● DUE'}</span></div>`;
+                    
+                    if (isManager) {
+                        btn.style.cursor = "pointer";
+                        btn.onclick = () => mutatePaymentCloud(fId, !statusIsPaid);
+                    }
+                    innerGrid.appendChild(btn);
+
+                    // Add line configuration row directly into summary audit spreadsheet report logs
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b text-[11px] hover:bg-gray-50";
+                    tr.innerHTML = `<td class="p-2 font-bold text-gray-900">${fId}</td><td class="p-2">${match.bhk}</td><td class="p-2 font-mono text-gray-600">₹${match.rate}</td><td class="p-2 font-black ${statusIsPaid?'text-green-600':'text-red-500'}">${statusIsPaid?'Paid':'Unpaid'}</td>`;
+                    ledgerBody.appendChild(tr);
+                });
+
+                fRow.appendChild(innerGrid);
+                container.appendChild(fRow);
+            });
+
+            let outlays = masterData.expenses.reduce((sum, current) => sum + current.amount, 0);
+            let absoluteNetWorthFund = grossAllTimeCollection - outlays;
+
+            document.getElementById('metricCollected').innerText = monthCollected.toLocaleString('en-IN');
+            document.getElementById('metricPaidCount').innerText = `${paidCount} / 36`;
+            document.getElementById('metricPending').innerText = monthPending.toLocaleString('en-IN');
+            document.getElementById('metricCorpus').innerText = absoluteNetWorthFund.toLocaleString('en-IN');
+
+            // Render operational financial logs panel map
+            const eBody = document.getElementById('expenseTableBody');
+            eBody.innerHTML = '';
+            if (masterData.expenses.length === 0) {
+                eBody.innerHTML = `<tr><td class="text-gray-400 italic text-center p-2">No outflows recorded.</td></tr>`;
+            } else {
+                masterData.expenses.forEach(exp => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b";
+                    tr.innerHTML = `<td class="p-1.5 font-medium text-gray-700">${exp.description}</td><td class="p-1.5 font-mono text-right text-red-600 font-bold">₹${exp.amount}</td>${isManager ? `<td class="p-1.5 text-center"><button onclick="killExpenseCloud('${exp.id}')" class="text-red-400 font-bold hover:text-red-600">🗑️</button></td>` : ''}`;
+                    eBody.appendChild(tr);
+                });
+            }
+        }
+
+        function mutatePaymentCloud(flatId, targetStatus) {
+            // Optimistic rendering update line layout interface instantly
+            const fIndex = masterData.flats.findIndex(i => i.flatNumber === flatId);
+            if (fIndex !== -1) masterData.flats[fIndex][currentMonth] = targetStatus;
+            renderUI();
+
+            fetch(GOOGLE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" }, // Bypass CORS preprocessing flags natively
+                body: JSON.stringify({
+                    action: "togglePayment",
+                    flatNumber: flatId,
+                    month: currentMonth,
+                    status: targetStatus ? "PAID" : "UNPAID"
+                })
+            }).then(() => syncData()).catch(err => console.error("Write back buffered:", err));
+        }
+
+        function submitExpenseCloud() {
+            const desc = document.getElementById('expDesc').value.trim();
+            const amt = parseFloat(document.getElementById('expAmt').value);
+            if (!desc || isNaN(amt) || amt <= 0) return alert("Verify field items!");
+
+            const payload = {
+                action: "addExpense",
+                id: Date.now().toString(),
+                description: desc,
+                amount: amt
+            };
+
+            fetch(GOOGLE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                document.getElementById('expDesc').value = '';
+                document.getElementById('expAmt').value = '';
+                syncData();
+            }).catch(e => console.error(e));
+        }
+
+        function killExpenseCloud(uid) {
+            if(!confirm("Remove recorded line?")) return;
+            fetch(GOOGLE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ action: "deleteExpense", id: uid })
+            }).then(() => syncData()).catch(e => console.error(e));
+        }
+    </script>
+</body>
+</html>
